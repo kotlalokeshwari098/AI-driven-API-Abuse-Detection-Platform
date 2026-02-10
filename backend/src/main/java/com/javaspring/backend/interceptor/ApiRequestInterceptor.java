@@ -1,14 +1,32 @@
 package com.javaspring.backend.interceptor;
 
 
+import com.javaspring.backend.filters.AuthenticationFilter;
 import com.javaspring.backend.model.ApiRequestLog;
+import com.javaspring.backend.service.ApiRequestLogService;
+import com.javaspring.backend.utils.ApiRequestLogBuilder;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.time.Instant;
+
+import static com.javaspring.backend.filters.AuthenticationFilter.LOGGED;
+
 @Component
 public class ApiRequestInterceptor implements HandlerInterceptor {
+
+    public ApiRequestLogService apiRequestLogService;
+
+    public ApiRequestLogBuilder apiRequestLogBuilder;
+
+    public ApiRequestInterceptor(ApiRequestLogService apiRequestLogService, ApiRequestLogBuilder apiRequestLogBuilder) {
+        this.apiRequestLogService = apiRequestLogService;
+        this.apiRequestLogBuilder = apiRequestLogBuilder;
+    }
+
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -21,7 +39,9 @@ public class ApiRequestInterceptor implements HandlerInterceptor {
             System.out.println("Client IP: "+ request.getRemoteAddr());
 
             //per request memory
-            request.setAttribute("StartTime", System.currentTimeMillis());
+            if(request.getAttribute("startTime") == null) {
+                request.setAttribute("startTime", Instant.now());
+            }
             request.setAttribute("requestURI", request.getRequestURI());
 
 
@@ -34,7 +54,19 @@ public class ApiRequestInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        ApiRequestLog responsemodel=new ApiRequestLog();
-        System.out.println("afterCompletion after sending request to controller"+responsemodel+"❤️❤️❤️❤️");
+
+        System.out.println("afterCompletion Before sending request to controller"+request.getDispatcherType());
+        if (request.getDispatcherType() != DispatcherType.REQUEST) return;
+        if (request.getAttribute(AuthenticationFilter.LOGGED) != null) {
+            return;
+        }
+
+        ApiRequestLog log = apiRequestLogBuilder.build(request, response, ex);
+        System.out.println(log.toString());
+        apiRequestLogService.saveLogs(log);
+        request.setAttribute(LOGGED, true);
+
+
+        System.out.println("afterCompletion after sending request to controller" + log.toString());
     }
 }

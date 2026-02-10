@@ -22,8 +22,8 @@ public class ApiRequestLog {
     private int statusCode;
     private String errorMessage;
 
-    private long startTime;
-    private long endTime;
+    private Instant startTime;
+    private Instant endTime;
     private long durationMs;
 
     @Column(nullable = false, updatable = false)
@@ -88,19 +88,30 @@ public class ApiRequestLog {
         this.errorMessage = errorMessage;
     }
 
-    public long getStartTime() {
+    public Instant getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(long startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public long getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(long endTime) {
+    @Override
+    public String toString() {
+        return "ApiRequestLog{" +
+                "endpoint='" + endpoint + '\'' +
+                ", userId=" + userId +
+                ", method='" + method + '\'' +
+                ", clientIp='" + clientIp + '\'' +
+                ", statusCode=" + statusCode +
+                '}';
+    }
+
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
