@@ -13,7 +13,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.time.Instant;
 
-import static com.javaspring.backend.filters.AuthenticationFilter.LOGGED;
 
 @Component
 public class ApiRequestInterceptor implements HandlerInterceptor {
@@ -56,17 +55,6 @@ public class ApiRequestInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
 
         System.out.println("afterCompletion Before sending request to controller"+request.getDispatcherType());
-        if (request.getDispatcherType() != DispatcherType.REQUEST) return;
-        if (request.getAttribute(AuthenticationFilter.LOGGED) != null) {
-            return;
-        }
 
-        ApiRequestLog log = apiRequestLogBuilder.build(request, response, ex);
-        System.out.println(log.toString());
-        apiRequestLogService.saveLogs(log);
-        request.setAttribute(LOGGED, true);
-
-
-        System.out.println("afterCompletion after sending request to controller" + log.toString());
     }
 }

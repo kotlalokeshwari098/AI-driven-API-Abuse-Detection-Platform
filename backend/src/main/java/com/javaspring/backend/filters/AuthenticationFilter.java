@@ -21,7 +21,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     public ApiRequestLogBuilder apiRequestLogBuilder;
 
-    public static final String LOGGED = "API_REQUEST_LOGGED";
 
     public AuthenticationFilter(ApiRequestLogService apiRequestLogService, ApiRequestLogBuilder apiRequestLogBuilder) {
         this.apiRequestLogService=apiRequestLogService;
@@ -34,9 +33,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         if (request.getAttribute("startTime") == null) {
             request.setAttribute("startTime", Instant.now());
         }
-        if (request.getAttribute(LOGGED) == null) {
-            request.setAttribute(LOGGED, false);
-        }
 
 
         try{
@@ -48,23 +44,16 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             e.printStackTrace();
         }
        finally{
-            //already logged ->stop
-            if (Boolean.TRUE.equals(request.getAttribute(LOGGED))) {
-                return;
-            }
-           System.out.println("AuthenticationFilter after doFilterInternal<UNK>");
-            if (response.getStatus() == 401 || response.getStatus() == 403) {
 
-                ApiRequestLog log = null;
-                try {
+           System.out.println("AuthenticationFilter after doFilterInternal<UNK>");
+            ApiRequestLog log = null;
+            try {
                     log = apiRequestLogBuilder.build(request, response, null);
-                } catch (Exception e) {
+            } catch (Exception e) {
                     throw new RuntimeException(e);
-                }
-                if (log != null) {
+            }
+            if (log != null) {
                     apiRequestLogService.saveLogs(log);
-                    request.setAttribute(LOGGED, true);
-                }
             }
         }
     }
