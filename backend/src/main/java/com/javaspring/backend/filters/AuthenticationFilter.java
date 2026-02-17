@@ -17,9 +17,9 @@ import java.time.Instant;
 @Component
 public class AuthenticationFilter extends OncePerRequestFilter {
 
-    ApiRequestLogService apiRequestLogService;
+    private final ApiRequestLogService apiRequestLogService;
 
-    public ApiRequestLogBuilder apiRequestLogBuilder;
+    private final ApiRequestLogBuilder apiRequestLogBuilder;
 
 
     public AuthenticationFilter(ApiRequestLogService apiRequestLogService, ApiRequestLogBuilder apiRequestLogBuilder) {
